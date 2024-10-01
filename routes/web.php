@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -25,3 +26,10 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+Route::prefix('users')->middleware(['auth','admin'])->group(function () {
+    Route::get('/',[RegisteredUserController::class,'index'])->name('users.index');
+    Route::post('store/',[RegisteredUserController::class,'store'])->name('users.store');
+    Route::get('/{id}',[RegisteredUserController::class,'edit'])->name('users.edit');
+    Route::put('update/{id}',[RegisteredUserController::class,'update'])->name('users.update');
+    Route::delete('delete/{id}',[RegisteredUserController::class,'destroy'])->name('users.delete');
+});

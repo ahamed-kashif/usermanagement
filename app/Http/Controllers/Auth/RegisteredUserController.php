@@ -1,13 +1,12 @@
 <?php
-
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
@@ -16,23 +15,21 @@ use Inertia\Response;
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
+     * Display the user registration form.
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('User/Register');
     }
 
     /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Handle an incoming user registration request.
      */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -44,8 +41,75 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
+        return redirect(route('users.index'))->with('success', 'User created successfully!');
+    }
 
-        return redirect(route('dashboard', absolute: false));
+    /**
+     * Display a paginated list of users.
+     */
+    public function index(Request $request): Response
+    {
+        // Retrieve the search query
+        $search = $request->input('search');
+
+        // Fetch users, filtering based on search query
+        $users = User::where('role', '!=', 'admin')
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->with(['uri.responses']) // Eager load uri and responses for each user
+            ->withCount('uri as responses_count')
+            ->paginate(10);
+        // Return the results to the Inertia view
+        return Inertia::render('User/Index', [
+            'users' => $users,
+        ]);
+    }
+
+
+    /**
+     * Show the form for editing the specified user.
+     */
+    public function edit($id)
+    {
+        try{
+            $user = User::findOrFail($id);
+            return Inertia::render('User/Register', [
+                'user' => $user,
+            ]);
+        }catch (ModelNotFoundException $exception){
+            return to_route('users.index')->with('error', 'User not found!');
+        }
+    }
+
+    /**
+     * Update the specified user in the database.
+     */
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+        ]);
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => $request->password ? Hash::make($request->password) : $user->password,
+        ]);
+
+        return redirect(route('users.index'))->with('success', 'User updated successfully!');
+    }
+
+    /**
+     * Delete the specified user from the database.
+     */
+    public function destroy(User $user): RedirectResponse
+    {
+        $user->delete();
+
+        return redirect(route('users.index'))->with('success', 'User deleted successfully!');
     }
 }

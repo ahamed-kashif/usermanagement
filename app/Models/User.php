@@ -44,4 +44,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function uri()
+    {
+        return $this->hasOne(ResponseViewUrl::class,'user_id','id');
+    }
+
+    public function hasRole($role)
+    {
+        return $this->role && $this->role === $role;
+    }
 }

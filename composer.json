@@ -9,9 +9,12 @@
         "inertiajs/inertia-laravel": "^1.0",
         "laravel/breeze": "^2.2",
         "laravel/framework": "^11.9",
+        "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
-        "tightenco/ziggy": "^2.0"
+        "spatie/laravel-medialibrary": "^11.9",
+        "tightenco/ziggy": "^2.0",
+        "uzzal/acl": "^3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
