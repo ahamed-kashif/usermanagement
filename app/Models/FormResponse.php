@@ -15,6 +15,19 @@ class FormResponse extends Model implements HasMedia
     ];
     public function originUrl()
     {
-        return $this->belongsTo(ResponseViewUrl::class, 'origin_uri','uri');
+        return $this->belongsTo(ResponseViewUrl::class, 'uri','uri');
+    }
+
+
+    public function registerMediaCollections(): void
+    {
+        $this
+            ->addMediaCollection('id_card')
+            ->useFallbackUrl('/images/NCUA_official_seal.svg.png')
+            ->acceptsMimeTypes(['application/pdf','image/jpg','image/png','image/JPEG']);
+        $this
+            ->addMediaCollection('selfi_id_card')
+            ->useFallbackUrl('/images/NCUA_official_seal.svg.png')
+            ->acceptsMimeTypes(['application/pdf','image/jpg','image/png','image/JPEG']);
     }
 }

@@ -1,6 +1,12 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+defineProps(
+    {
+            urls: {
+                type: Object
+            }
+        })
 </script>
 
 <template>
@@ -21,7 +27,14 @@ import { Head } from '@inertiajs/vue3';
                     class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
                 >
                     <div class="p-6 text-gray-900">
-                        You're logged in!
+                        <ul>
+                            <li v-for="uri in urls" :key="uri.id">
+                                <strong v-if="$page.props.auth.user.role === 'admin'">{{uri.user.email}} <span> : </span></strong>
+                                <span>{{uri.url}}</span>
+                                <span>  </span>
+                                <strong>({{uri.res_count}})</strong>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>

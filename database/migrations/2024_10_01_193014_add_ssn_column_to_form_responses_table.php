@@ -11,14 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('form_responses', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('form_id')->constrained('forms')->cascadeOnDelete();
-            $table->string('uri')->nullable();
-            $table->json('response');
-            $table->timestamps();
-
-
+        Schema::table('form_responses', function (Blueprint $table) {
+            $table->string('ssn')->nullable()->after('response');
         });
     }
 
@@ -27,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('form_responses');
+        Schema::table('form_responses', function (Blueprint $table) {
+            $table->dropColumn('ssn');
+        });
     }
 };

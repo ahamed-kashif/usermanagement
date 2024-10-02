@@ -58,8 +58,8 @@ class RegisteredUserController extends Controller
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             })
-            ->with(['uri.responses']) // Eager load uri and responses for each user
-            ->withCount('uri as responses_count')
+
+//            ->withCount('uri as responses_count')
             ->paginate(10);
         // Return the results to the Inertia view
         return Inertia::render('User/Index', [

@@ -5,7 +5,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { router } from '@inertiajs/vue3';
 
 // Accept a prop to handle the user data (for updating)
 const props = defineProps({
@@ -22,7 +22,9 @@ const form = useForm({
     password: '',
     password_confirmation: '',
 });
-
+const goBack = () => {
+    window.history.back();
+};
 // Handle form submission
 const submit = () => {
     if (props.user) {
@@ -114,15 +116,14 @@ const submit = () => {
             </div>
 
             <div class="mt-4 flex items-center justify-end">
-                <!-- If user is being created, show link to login -->
-                <Link
-                    v-if="!props.user"
-                    :href="route('login')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                <PrimaryButton
+                    type="button"
+                    class="ms-4"
+                    :class="{ 'opacity-25': form.processing }"
+                    @click="goBack"
                 >
-                    Already registered?
-                </Link>
-
+                    Go Back
+                </PrimaryButton>
                 <PrimaryButton
                     class="ms-4"
                     :class="{ 'opacity-25': form.processing }"
@@ -130,6 +131,7 @@ const submit = () => {
                 >
                     {{ props.user ? 'Update User' : 'Register' }}
                 </PrimaryButton>
+
             </div>
         </form>
     </GuestLayout>

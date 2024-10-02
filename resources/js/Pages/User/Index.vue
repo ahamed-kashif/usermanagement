@@ -34,7 +34,19 @@ defineProps({
                 <div class="bg-white shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <!-- Use the reusable TableWithPagination component -->
-                        <DataTable :columns="columns" :data="users" searchRoute="/users" />
+                        <div class="flex justify-end">
+                            <a :href="route('users.create')" class="no-underline w-1/6 px-2 py-4 bg-blend-luminosity bg-amber-200 text-center mb-4 hover:bg-amber-500 hover:shadow hover:text-amber-50 hover:shadow-amber-300">
+                                <span class="font-bold ">Add New User</span>
+                            </a>
+                        </div>
+                        <DataTable
+                            :columns="columns"
+                            :data="users"
+                            searchRoute="/users"
+                            :hasAction="true"
+                            :editRoute="(id) => route('users.edit', id)"
+                            :deleteRoute="(id) => route('users.delete', id)"
+                        />
                     </div>
                 </div>
             </div>

@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { Inertia } from "@inertiajs/inertia";
+import { router } from '@inertiajs/vue3'
 
 export default {
     props: {
@@ -55,7 +55,7 @@ export default {
     methods: {
         goToPage(link) {
             if (link) {
-                Inertia.get(link);
+                router.visit(link)
             }
         },
         hasPrevLink() {
