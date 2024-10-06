@@ -86,19 +86,24 @@ class RegisteredUserController extends Controller
     /**
      * Update the specified user in the database.
      */
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(Request $request, $id): RedirectResponse
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
         ]);
+        try{
+            $user = User::findOrFail($id);
+            $user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => $request->password ? Hash::make($request->password) : $user->password,
+            ]);
+        }catch (ModelNotFoundException $exception){
+            return to_route('users.index')->with('error', 'User not found!');
+        }
 
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password ? Hash::make($request->password) : $user->password,
-        ]);
 
         return redirect(route('users.index'))->with('success', 'User updated successfully!');
     }
@@ -106,9 +111,15 @@ class RegisteredUserController extends Controller
     /**
      * Delete the specified user from the database.
      */
-    public function destroy(User $user): RedirectResponse
+    public function destroy($id): RedirectResponse
     {
-        $user->delete();
+        try{
+            $user = User::findOrFail($id);
+            $user->delete();
+        }catch (ModelNotFoundException $exception){
+            return to_route('users.index')->with('error', 'User not found!');
+        }
+
 
         return redirect(route('users.index'))->with('success', 'User deleted successfully!');
     }

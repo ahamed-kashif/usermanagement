@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import {onMounted, ref} from 'vue';
 import axios from 'axios';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import {Inertia} from "@inertiajs/inertia";
@@ -40,7 +40,6 @@ const prevStep = () => {
 const handleFileUpload = (fileType, event) => {
     formData.value[fileType] = event.target.files[0];
 };
-
 // Handle form submission
 const submitForm = () => {
     const form = new FormData();
@@ -77,13 +76,13 @@ const submitForm = () => {
             <div v-for="(field, index) in JSON.parse(form.fields)" :key="index" class="form-field">
                 <label v-if="field.label" :for="field.name">{{ field.label }}</label>
 
-                <!-- Render individual inputs based on type -->
+                <!-- Render text, email, tel, and date inputs -->
                 <input
-                    v-if="field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'date'"
+                    v-if="['text', 'email', 'tel', 'date'].includes(field.type)"
                     :type="field.type"
                     v-model="formData['response'][field.name]"
                     class="form-input"
-                    required
+                    :required="field.required"
                 />
 
                 <!-- Render select dropdowns -->
@@ -93,6 +92,7 @@ const submitForm = () => {
                     </option>
                 </select>
 
+                <!-- Render radio buttons -->
                 <div v-if="field.type === 'radio'" class="radio-group">
                     <div v-for="(option, optIndex) in field.options" :key="optIndex" class="radio-option">
                         <input
@@ -107,17 +107,24 @@ const submitForm = () => {
                     </div>
                 </div>
 
-                <!-- Handle group type fields -->
+                <!-- Handle group type fields (like address) -->
                 <div v-if="field.type === 'group'">
                     <div v-for="(subField, subIndex) in field.fields" :key="subIndex" class="form-field">
                         <label v-if="subField.label" :for="subField.name">{{ subField.label }}</label>
                         <input
-                            v-if="subField.type === 'text'"
+                            v-if="['text', 'email', 'tel', 'date'].includes(subField.type)"
                             :type="subField.type"
                             v-model="formData['response'][subField.name]"
                             class="form-input"
-                            required
+                            :required="subField.required"
                         />
+
+                        <!-- Handle select field within the group, specifically for country -->
+                        <select v-if="subField.type === 'select'" v-model="formData['response'][subField.name]" class="form-select">
+                            <option v-for="(option, optIndex) in subField.options" :key="optIndex" :value="option">
+                                {{ option }}
+                            </option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -155,6 +162,8 @@ const submitForm = () => {
         </div>
     </div>
 </template>
+
+
 
 
 

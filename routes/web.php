@@ -21,23 +21,49 @@ Route::get('/dashboard', function () {
     $user = Auth::guard('web')->user();
     if($user->hasRole('admin')){
         $urls = \App\Models\ResponseViewUrl::orderBy('created_at', 'desc')
+            ->with('form')
             ->withCount(['responses as res_count'])->get()->map(function($url){
-            return [
-                'user' => [
-                    'id' => $url->user->id,
-                    'email' => $url->user->email,
-                ],
-                'id' => $url->id,
-                'url' => $url->uri,
-                'res_count' => $url->res_count,
-            ];
+                $responseData = $url->responses->map(function ($response) {
+                    return [
+                        'created_at' => $response->created_at->format('Y-m-d'),
+                    ];
+                })->countBy('created_at')->map(function ($count, $date) {
+                    return [
+                        'date' => $date,
+                        'count' => $count,
+                    ];
+                })->values();
+                return [
+                    'user' => [
+                        'id' => $url->user->id,
+                        'email' => $url->user->email,
+                    ],
+                    'id' => $url->id,
+                    'url' => $url->uri,
+                    'form' => $url->form->name ?? 'N\A',
+                    'res_count' => $url->res_count,
+                    'data' => $responseData,
+                ];
         });
     }else{
-        $urls = $user->uris()->withCount(['responses as res_count'])->get()->map(function($url){
+        $urls = $user->uris()->with(['form','responses'])->withCount(['responses as res_count'])->get()->map(function($url){
+            $responseData = $url->responses->map(function ($response) {
+                return [
+                    'created_at' => $response->created_at->format('Y-m-d'),
+                ];
+            })->countBy('created_at')->map(function ($count, $date) {
+                return [
+                    'date' => $date,
+                    'count' => $count,
+                ];
+            })->values();
+
             return [
                 'id' => $url->id,
                 'url' => $url->uri,
+                'form' => $url->form->name ?? 'N/A',
                 'res_count' => $url->res_count,
+                'data' => $responseData, // Data for charting
             ];
         });
     }

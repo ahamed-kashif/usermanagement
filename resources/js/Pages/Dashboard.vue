@@ -30,7 +30,7 @@ defineProps(
                         <ul>
                             <li v-for="uri in urls" :key="uri.id">
                                 <strong v-if="$page.props.auth.user.role === 'admin'">{{uri.user.email}} <span> : </span></strong>
-                                <span>{{uri.url}}</span>
+                                <code>{{route('forms.u',uri.url)}}</code>
                                 <span>  </span>
                                 <strong>({{uri.res_count}})</strong>
                             </li>
