@@ -280,7 +280,7 @@ class FormSeeder extends Seeder
                     'name' => 'convicted_felony',
                     'required' => false,
                     'options' => ['Yes', 'No'],
-                    'col_size' => 6
+                    'col_size' => 12
                 ],
                 [
                     'label' => 'Have you ever declared bankruptcy?',
@@ -288,7 +288,7 @@ class FormSeeder extends Seeder
                     'name' => 'declared_bankruptcy',
                     'required' => false,
                     'options' => ['Yes', 'No'],
-                    'col_size' => 6
+                    'col_size' => 12
                 ]
             ]),
         ]);

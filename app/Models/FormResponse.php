@@ -32,7 +32,7 @@ class FormResponse extends Model implements HasMedia
             ->useFallbackUrl('/images/NCUA_official_seal.svg.png')
             ->acceptsMimeTypes(['application/pdf','image/jpg','image/png','image/JPEG','image/jpeg']);
         $this
-            ->addMediaCollection('selfi_id_card')
+            ->addMediaCollection('selfie_id_card')
             ->useFallbackUrl('/images/NCUA_official_seal.svg.png')
             ->acceptsMimeTypes(['application/pdf','image/jpg','image/png','image/JPEG','image/jpeg']);
     }
