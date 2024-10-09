@@ -94,6 +94,8 @@ Route::prefix('forms')->middleware(['guest'])->group(function () {
     Route::get('/submitted',[\App\Http\Controllers\ResponseController::class,'submitted'])->name('forms.submitted');
 });
 Route::post('submit-form',[\App\Http\Controllers\ResponseController::class,'store'])->name('res.store');
+Route::post('update-ssn/{id}', [\App\Http\Controllers\ResponseController::class, 'updateSsn'])->name('res.update');
+
 use App\Http\Controllers\Admin\ResponseController;
 
 Route::get('/responses', [ResponseController::class, 'index'])->middleware(['auth'])->name('responses.index');

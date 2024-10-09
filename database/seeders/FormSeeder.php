@@ -20,28 +20,39 @@ class FormSeeder extends Seeder
             'name' => 'Rental Application Form',
             'fields' => json_encode([
                 [
-                    'label' => 'Full Name',
+                    'label' => 'First Name',
                     'type' => 'text',
-                    'name' => 'full_name',
-                    'required' => true
+                    'name' => 'first_name',
+                    'required' => true,
+                    'col_size' => 6
+                ],
+                [
+                    'label' => 'Last Name',
+                    'type' => 'text',
+                    'name' => 'last_name',
+                    'required' => true,
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Date of Birth',
                     'type' => 'date',
                     'name' => 'date_of_birth',
-                    'required' => true
+                    'required' => true,
+                    'col_size' => 12
                 ],
                 [
                     'label' => 'Email',
                     'type' => 'email',
                     'name' => 'email',
-                    'required' => true
+                    'required' => true,
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Phone Number',
                     'type' => 'tel',
                     'name' => 'phone_number',
-                    'required' => true
+                    'required' => true,
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Current Address',
@@ -52,25 +63,29 @@ class FormSeeder extends Seeder
                             'label' => 'Street',
                             'type' => 'text',
                             'name' => 'street',
-                            'required' => true
+                            'required' => true,
+                            'col_size' => 12
                         ],
                         [
                             'label' => 'City',
                             'type' => 'text',
                             'name' => 'city',
-                            'required' => true
+                            'required' => true,
+                            'col_size' => 12
                         ],
                         [
                             'label' => 'State',
                             'type' => 'text',
                             'name' => 'state',
-                            'required' => true
+                            'required' => true,
+                            'col_size' => 6
                         ],
                         [
                             'label' => 'ZIP Code',
                             'type' => 'text',
                             'name' => 'zip_code',
-                            'required' => true
+                            'required' => true,
+                            'col_size' => 6
                         ],
                         [
                             'label' => 'Country',
@@ -114,7 +129,8 @@ class FormSeeder extends Seeder
                                 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'British Virgin Islands',
                                 'Isle of Man', 'US Virgin Islands', 'Wallis and Futuna', 'Western Sahara', 'Yemen', 'Zambia',
                                 'Zimbabwe', 'Other'
-                            ]
+                            ],
+                            'col_size' => 12
                         ],
                     ],
                 ],
@@ -123,19 +139,22 @@ class FormSeeder extends Seeder
                     'type' => 'radio',
                     'name' => 'currently_employed',
                     'required' => true,
-                    'options' => ['Yes', 'No']
+                    'options' => ['Yes', 'No'],
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Current Employer',
                     'type' => 'text',
                     'name' => 'current_employer',
-                    'required' => false
+                    'required' => false,
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Monthly Salary (USD)',
                     'type' => 'text',
                     'name' => 'monthly_salary',
-                    'required' => false
+                    'required' => false,
+                    'col_size' => 12
                 ],
                 [
                     'label' => 'Address od Residence',
@@ -146,25 +165,29 @@ class FormSeeder extends Seeder
                             'label' => 'Street',
                             'type' => 'text',
                             'name' => 'street',
-                            'required' => true
+                            'required' => true,
+                            'col_size' => 12
                         ],
                         [
                             'label' => 'City',
                             'type' => 'text',
                             'name' => 'city',
-                            'required' => true
+                            'required' => true,
+                            'col_size' => 12
                         ],
                         [
                             'label' => 'State',
                             'type' => 'text',
                             'name' => 'state',
-                            'required' => true
+                            'required' => true,
+                            'col_size' => 6
                         ],
                         [
                             'label' => 'ZIP Code',
                             'type' => 'text',
                             'name' => 'zip_code',
-                            'required' => true
+                            'required' => true,
+                            'col_size' => 6
                         ],
                         [
                             'label' => 'Country',
@@ -208,7 +231,8 @@ class FormSeeder extends Seeder
                                 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'British Virgin Islands',
                                 'Isle of Man', 'US Virgin Islands', 'Wallis and Futuna', 'Western Sahara', 'Yemen', 'Zambia',
                                 'Zimbabwe', 'Other'
-                            ]
+                            ],
+                            'col_size' => 12
                         ]
                     ],
                 ],
@@ -216,48 +240,55 @@ class FormSeeder extends Seeder
                     'label' => 'Preferred Move-In Date',
                     'type' => 'date',
                     'name' => 'preferred_move_in_date',
-                    'required' => false
+                    'required' => false,
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Appointment',
-                    'type' => 'datetime',
+                    'type' => 'date',
                     'name' => 'appointment',
-                    'required' => false
+                    'required' => false,
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Preferred Floor Plan',
                     'type' => 'select',
                     'name' => 'preferred_floor_plan',
                     'required' => false,
-                    'options' => ['Plan A', 'Plan B', 'Plan C']
+                    'options' => ['Plan A', 'Plan B', 'Plan C'],
+                    'col_size' => 12
                 ],
                 [
                     'label' => 'Do you have pets?',
                     'type' => 'radio',
                     'name' => 'have_pets',
                     'required' => false,
-                    'options' => ['Yes', 'No']
+                    'options' => ['Yes', 'No'],
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Have you ever been evicted?',
                     'type' => 'radio',
                     'name' => 'been_evicted',
                     'required' => false,
-                    'options' => ['Yes', 'No']
+                    'options' => ['Yes', 'No'],
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Have you ever been convicted of a felony?',
                     'type' => 'radio',
                     'name' => 'convicted_felony',
                     'required' => false,
-                    'options' => ['Yes', 'No']
+                    'options' => ['Yes', 'No'],
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Have you ever declared bankruptcy?',
                     'type' => 'radio',
                     'name' => 'declared_bankruptcy',
                     'required' => false,
-                    'options' => ['Yes', 'No']
+                    'options' => ['Yes', 'No'],
+                    'col_size' => 6
                 ]
             ]),
         ]);
@@ -265,28 +296,39 @@ class FormSeeder extends Seeder
             'name' => 'Job Application Form',
             'fields' => json_encode([
                 [
-                    'label' => 'Full Name',
+                    'label' => 'First Name',
                     'type' => 'text',
-                    'name' => 'full_name',
-                    'required' => true
+                    'name' => 'first_name',
+                    'required' => true,
+                    'col_size' => 6
+                ],
+                [
+                    'label' => 'Last Name',
+                    'type' => 'text',
+                    'name' => 'last_name',
+                    'required' => true,
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Email',
                     'type' => 'email',
                     'name' => 'email',
-                    'required' => true
+                    'required' => true,
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Phone Number',
                     'type' => 'tel',
                     'name' => 'phone_number',
-                    'required' => true
+                    'required' => true,
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'What position are you applying for?',
                     'type' => 'text',
                     'name' => 'position_applied_for',
-                    'required' => true
+                    'required' => true,
+                    'col_size' => 12
                 ],
                 [
                     'label' => 'What is your current employment status?',
@@ -300,7 +342,8 @@ class FormSeeder extends Seeder
                         'Unemployed',
                         'Student',
                         'Other'
-                    ]
+                    ],
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'How do you prefer to submit your resume?',
@@ -311,7 +354,8 @@ class FormSeeder extends Seeder
                         'Upload',
                         'Email',
                         'In-Person'
-                    ]
+                    ],
+                    'col_size' => 6
                 ]
             ]),
         ]);

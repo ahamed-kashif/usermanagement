@@ -1,31 +1,35 @@
 <script setup>
-import {onMounted, ref} from 'vue';
+import { ref, reactive } from 'vue';
 import axios from 'axios';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import {Inertia} from "@inertiajs/inertia";
 
 // Define props (including uri)
-const props =  defineProps({
+const props = defineProps({
     form: Object,
-    uri: String // Ensure that 'uri' is passed as a prop
+    uri: String,
 });
 
 const currentStep = ref(1);
+const isSubmitting = ref(false);
+const formResponseId = ref(null); // Store the response ID after Step 2 submission
+const errors = ref(null); // Store validation errors
 
-// Initialize formData with uri prop and other fields
-const formData = ref({
+// Initialize formData as a reactive object
+const formData = reactive({
     id_front: null,
     id_back: null,
     selfie_id: null,
     ssn: '',
-    uri: props.uri, // Pass the uri prop here
+    uri: props.uri,
     response: {},
-    form_id:props.form.id
+    form_id: props.form.id,
 });
 
 // Step navigation
 const nextStep = () => {
-    if (currentStep.value < 3) {
+    if (currentStep.value === 2) {
+        submitForm(); // Submit after Step 2
+    } else {
         currentStep.value++;
     }
 };
@@ -36,175 +40,232 @@ const prevStep = () => {
     }
 };
 
-// Handle file uploads
-const handleFileUpload = (fileType, event) => {
-    formData.value[fileType] = event.target.files[0];
+// Initialize group fields
+const initializeGroup = (groupName) => {
+    if (!formData.response[groupName]) {
+        formData.response[groupName] = {};
+    }
 };
-// Handle form submission
+
+// Step 2: Handle form submission and store formResponseId
 const submitForm = () => {
+    isSubmitting.value = true;
+    errors.value = null;
+
     const form = new FormData();
-    form.append('uri', formData.value.uri ?? null); // Include uri in the form data
-    form.append('form_id', formData.value.form_id);
-    form.append('id_front', formData.value.id_front);
-    form.append('id_back', formData.value.id_back);
-    form.append('selfie_id', formData.value.selfie_id);
-    form.append('ssn', formData.value.ssn);
-    form.append('response', JSON.stringify(formData.value.response)); // Include the form response
-    console.log(formData.value.response)
-    axios.post(route('res.store'), form)
-        .then(response => {
-            window.location.href = route('forms.submitted')
+    form.append('uri', formData.uri ?? null);
+    form.append('form_id', formData.form_id);
+    form.append('id_front', formData.id_front);
+    form.append('id_back', formData.id_back);
+    form.append('selfie_id', formData.selfie_id);
+    form.append('response', JSON.stringify(formData.response));
+
+    axios
+        .post(route('res.store'), form)
+        .then((response) => {
+            formResponseId.value = response.data.response_id; // Store the response ID for step 3
+            currentStep.value++; // Move to step 3
         })
-        .catch(error => {
-            console.error(error);
+        .catch((error) => {
+            if (error.response && error.response.status === 422) {
+                errors.value = error.response.data.errors; // Handle validation errors
+            } else {
+                alert('An unexpected error occurred. Please try again.');
+            }
+        })
+        .finally(() => {
+            isSubmitting.value = false;
+        });
+};
+
+// Step 3: Submit SSN and update the form
+const submitSsn = () => {
+    isSubmitting.value = true;
+    errors.value = null;
+
+    axios
+        .post(route('res.update', formResponseId.value), {
+            ssn: formData.ssn,
+        })
+        .then(() => {
+            window.location.href = route('forms.submitted'); // Redirect to the completion page
+        })
+        .catch((error) => {
+            if (error.response && error.response.status === 422) {
+                errors.value = error.response.data.errors; // Handle validation errors
+            } else {
+                alert('An unexpected error occurred. Please try again.');
+            }
+        })
+        .finally(() => {
+            isSubmitting.value = false;
         });
 };
 </script>
+
 <template>
     <div class="form-container">
         <h1>{{ form.name }}</h1>
 
-        <!-- Linear Progress Bar with Dotted Steps -->
-        <div class="progress-bar">
-            <div :class="['progress-step', currentStep >= 1 ? 'active' : '']">Step 1</div>
-            <div :class="['progress-step', currentStep >= 2 ? 'active' : '']">Step 2</div>
-            <div :class="['progress-step', currentStep === 3 ? 'active' : '']">Step 3</div>
+        <!-- Display validation errors -->
+        <div v-if="errors" class="error-message">
+            <ul>
+                <li v-for="(message, field) in errors" :key="field">{{ message[0] }}</li>
+            </ul>
         </div>
 
+        <!-- Linear Progress Bar with Dotted Steps -->
+        <v-progress-linear
+            :model-value="(currentStep / 3) * 100"
+            color="light-blue"
+            height="10"
+            striped
+        ></v-progress-linear>
+
         <!-- Step 1: Form Inputs -->
-        <div v-if="currentStep === 1">
-            <div v-for="(field, index) in JSON.parse(form.fields)" :key="index" class="form-field">
-                <label v-if="field.label" :for="field.name">{{ field.label }}</label>
+        <div v-if="currentStep === 1" class="mt-6">
+            <v-row>
+                <v-col
+                    v-for="(field, index) in JSON.parse(form.fields)"
+                    :key="index"
+                    class="form-field"
+                    :cols="field.col_size || 12"
+                >
+                    <!-- Render text, email, tel, and date inputs -->
+                    <v-text-field
+                        v-if="['text', 'email', 'tel', 'date'].includes(field.type)"
+                        :type="field.type"
+                        v-model="formData.response[field.name]"
+                        :label="field.label"
+                        :required="field.required"
+                    />
 
-                <!-- Render text, email, tel, and date inputs -->
-                <input
-                    v-if="['text', 'email', 'tel', 'date'].includes(field.type)"
-                    :type="field.type"
-                    v-model="formData['response'][field.name]"
-                    class="form-input"
-                    :required="field.required"
-                />
+                    <!-- Render select dropdowns -->
+                    <v-select
+                        v-else-if="field.type === 'select'"
+                        v-model="formData.response[field.name]"
+                        :items="field.options"
+                        :label="field.label"
+                        :required="field.required"
+                    />
 
-                <!-- Render select dropdowns -->
-                <select v-if="field.type === 'select'" v-model="formData['response'][field.name]" class="form-select">
-                    <option v-for="(option, optIndex) in field.options" :key="optIndex" :value="option">
-                        {{ option }}
-                    </option>
-                </select>
-
-                <!-- Render radio buttons -->
-                <div v-if="field.type === 'radio'" class="radio-group">
-                    <div v-for="(option, optIndex) in field.options" :key="optIndex" class="radio-option">
-                        <input
-                            type="radio"
-                            :name="field.name"
-                            :id="field.name + '-' + optIndex"
+                    <!-- Render radio buttons -->
+                    <v-radio-group
+                        v-else-if="field.type === 'radio'"
+                        v-model="formData.response[field.name]"
+                        :label="field.label"
+                        :required="field.required"
+                    >
+                        <v-radio
+                            v-for="(option, optIndex) in field.options"
+                            :key="optIndex"
+                            :label="option"
                             :value="option"
-                            v-model="formData['response'][field.name]"
-                            class="form-radio"
                         />
-                        <label :for="field.name + '-' + optIndex">{{ option }}</label>
-                    </div>
-                </div>
+                    </v-radio-group>
 
-                <!-- Handle group type fields (like address) -->
-                <div v-if="field.type === 'group'">
-                    <div v-for="(subField, subIndex) in field.fields" :key="subIndex" class="form-field">
-                        <label v-if="subField.label" :for="subField.name">{{ subField.label }}</label>
-                        <input
-                            v-if="['text', 'email', 'tel', 'date'].includes(subField.type)"
-                            :type="subField.type"
-                            v-model="formData['response'][subField.name]"
-                            class="form-input"
-                            :required="subField.required"
-                        />
+                    <!-- Handle group type fields (like address) -->
+                    <div v-else-if="field.type === 'group'">
+                        <template v-if="!formData.response[field.name]">
+                            {{ initializeGroup(field.name) }}
+                        </template>
+                        <v-row>
+                            <v-col
+                                v-for="(subField, subIndex) in field.fields"
+                                :key="subIndex"
+                                class="form-field"
+                                :cols="subField.col_size || 12"
+                            >
+                                <!-- Sub-field text inputs -->
+                                <v-text-field
+                                    v-if="['text', 'email', 'tel', 'date'].includes(subField.type)"
+                                    :type="subField.type"
+                                    v-model="formData.response[field.name][subField.name]"
+                                    :label="subField.label"
+                                    :required="subField.required"
+                                />
 
-                        <!-- Handle select field within the group, specifically for country -->
-                        <select v-if="subField.type === 'select'" v-model="formData['response'][subField.name]" class="form-select">
-                            <option v-for="(option, optIndex) in subField.options" :key="optIndex" :value="option">
-                                {{ option }}
-                            </option>
-                        </select>
+                                <!-- Sub-field select inputs -->
+                                <v-select
+                                    v-else-if="subField.type === 'select' && subField.options.length > 0"
+                                    v-model="formData.response[field.name][subField.name]"
+                                    :items="subField.options"
+                                    :label="subField.label"
+                                    density="comfortable"
+                                    :menu-props="{ closeOnContentClick: false, eager: true }"
+                                    class="my-custom-select"
+                                />
+                            </v-col>
+                        </v-row>
                     </div>
-                </div>
-            </div>
-            <PrimaryButton @click="nextStep">Next</PrimaryButton>
+                </v-col>
+            </v-row>
+
+            <v-btn color="primary" @click="nextStep">Next</v-btn>
         </div>
 
         <!-- Step 2: File Upload -->
         <div v-if="currentStep === 2">
             <h2>Submit your official ID</h2>
-            <div class="form-field">
-                <label>Front Page of ID</label>
-                <input type="file" name="id_front" @change="handleFileUpload('id_front', $event)">
-            </div>
-            <div class="form-field">
-                <label>Back Page of ID</label>
-                <input type="file" name="id_back" @change="handleFileUpload('id_back', $event)">
-            </div>
-            <div class="form-field">
-                <label>Selfie with ID</label>
-                <input type="file" name="selfie_id" @change="handleFileUpload('selfie_id', $event)">
-            </div>
-            <PrimaryButton @click="prevStep">Back</PrimaryButton>
-            <PrimaryButton @click="nextStep">Next</PrimaryButton>
+            <v-file-input
+                label="Front Page of ID"
+                v-model="formData.id_front"
+                prepend-icon="mdi-file"
+            ></v-file-input>
+            <v-file-input
+                label="Back Page of ID"
+                v-model="formData.id_back"
+                prepend-icon="mdi-file"
+            ></v-file-input>
+            <v-file-input
+                label="Selfie with ID"
+                v-model="formData.selfie_id"
+                prepend-icon="mdi-file"
+            ></v-file-input>
+            <v-btn color="secondary" @click="prevStep">Back</v-btn>
+            <v-btn :disabled="isSubmitting" color="primary" @click="nextStep">Next</v-btn>
         </div>
 
         <!-- Step 3: SSN Input -->
         <div v-if="currentStep === 3">
             <h2>Submit your Social Security Number (SSN)</h2>
-            <div class="form-field">
-                <label for="ssn">Social Security Number (SSN)</label>
-                <input type="text" v-model="formData.ssn" required class="form-input" placeholder="e.g., 123-45-6789" />
-            </div>
-            <PrimaryButton @click="prevStep">Back</PrimaryButton>
-            <PrimaryButton @click="submitForm">Submit</PrimaryButton>
+            <v-text-field
+                label="Social Security Number (SSN)"
+                v-model="formData.ssn"
+                required
+                placeholder="e.g., 123-45-6789"
+            ></v-text-field>
+            <v-btn color="secondary" @click="prevStep">Back</v-btn>
+            <v-btn :disabled="isSubmitting" color="primary" @click="submitSsn">Submit</v-btn>
         </div>
     </div>
 </template>
-
-
-
-
-
 
 <style scoped>
 .form-container {
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-}
-.form-input,
-.form-select {
-    display: block;
-    width: 100%;
-    padding: 8px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
 }
 
-/* Progress Bar Styling */
-.progress-bar {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
+.v-field__input {
+    padding-top: 0;
 }
-.progress-step {
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-    text-align: center;
-    border-radius: 50%;
-    background-color: #f0f0f0;
-    color: #333;
-    border: 3px solid #ddd;
+
+.my-custom-select {
+    padding-bottom: 0; /* Remove padding */
+    margin-bottom: 10px; /* Add spacing */
+    min-height: 40px; /* Consistent height */
+    border: none; /* Disable border styling */
 }
-.progress-step.active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
+
+.v-field__input {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.error-message {
+    color: red;
+    margin-bottom: 10px;
 }
 </style>

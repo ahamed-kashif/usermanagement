@@ -43,7 +43,6 @@ class ResponseController extends Controller
             'uri' => 'required|string',
             'form_id' => 'required|exists:forms,id',
             'response' => 'required|string', // Step 1 data
-            'ssn' => 'required|string', // Step 3 data
             'id_front' => 'required|file|mimes:jpeg,png,jpg,pdf', // Step 2 files
             'id_back' => 'required|file|mimes:jpeg,png,jpg,pdf',  // Step 2 files
             'selfie_id' => 'required|file|mimes:jpeg,png,jpg,pdf', // Step 2 files
@@ -54,27 +53,37 @@ class ResponseController extends Controller
             'form_id' => $request->form_id,
             'uri' => $request->uri ?? null,
             'response' => $request->response, // Store Step 1 and 3 in response as JSON
-            'ssn' => $request->ssn
         ]);
 
         // Step 2: Store files in media collections
         $formResponse->addMedia($request->file('id_front'))
-                    ->withCustomProperties([
-                        'id_side' => IdSide::FRONT
-                    ])
-                    ->toMediaCollection('id_card');
+            ->withCustomProperties(['id_side' => IdSide::FRONT])
+            ->toMediaCollection('id_card');
+
         $formResponse->addMedia($request->file('id_back'))
-                ->withCustomProperties([
-                    'id_side' => IdSide::BACK
-                ])
-                ->toMediaCollection('id_card');
-        $formResponse->addMedia($request->file('selfie_id'))->toMediaCollection('selfi_id_card');
+            ->withCustomProperties(['id_side' => IdSide::BACK])
+            ->toMediaCollection('id_card');
 
-        // Step 3: Update the response with SSN
-        $response = json_decode($formResponse->response, true);
-        $formResponse->update(['response' => json_encode($response)]);
+        $formResponse->addMedia($request->file('selfie_id'))
+            ->toMediaCollection('selfie_id_card');
 
-        return response()->json(['message' => 'Form submitted successfully!']);
+        // Return the response ID to the front-end
+        return response()->json(['response_id' => $formResponse->id, 'message' => 'Form submitted successfully!']);
+    }
+
+    public function updateSsn(Request $request, $id)
+    {
+        // Validate the SSN input
+        $request->validate([
+            'ssn' => 'required|string',
+        ]);
+
+        // Find the form response and update it
+        $formResponse = FormResponse::findOrFail($id);
+
+        $formResponse->update(['ssn' => $request->ssn]);
+
+        return response()->json(['message' => 'SSN updated successfully!']);
     }
 
     public function submitted()
