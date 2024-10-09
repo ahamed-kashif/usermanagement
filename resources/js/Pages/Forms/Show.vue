@@ -208,24 +208,44 @@ const submitSsn = () => {
 
             <!-- Step 2: File Upload -->
             <div v-if="currentStep === 2">
-                <h2>Submit your official ID</h2>
-                <v-file-input
-                    label="Front Page of ID"
-                    v-model="formData.id_front"
-                    prepend-icon="mdi-file"
-                ></v-file-input>
-                <v-file-input
-                    label="Back Page of ID"
-                    v-model="formData.id_back"
-                    prepend-icon="mdi-file"
-                ></v-file-input>
-                <v-file-input
-                    label="Selfie with ID"
-                    v-model="formData.selfie_id"
-                    prepend-icon="mdi-file"
-                ></v-file-input>
-                <v-btn color="secondary" @click="prevStep">Back</v-btn>
-                <v-btn :disabled="isSubmitting" color="primary" @click="nextStep">Next</v-btn>
+
+                <v-row>
+                    <h2 class="mt-4 text-center pl-4">Submit your official ID</h2>
+                    <v-col :cols="12">
+                        <div class="flex justify-center items-center">
+                            <img src="/images/front.png" alt="front" class=" w-1/2">
+                        </div>
+                        <v-file-input
+                            label="Front Page of ID"
+                            v-model="formData.id_front"
+                        ></v-file-input>
+                    </v-col>
+
+                    <v-col :cols="12">
+                        <div class="flex justify-center items-center">
+                            <img src="/images/back.png" alt="back" class=" w-1/2">
+                        </div>
+                        <v-file-input
+                            label="Back Page of ID"
+                            v-model="formData.id_back"
+                        ></v-file-input>
+                    </v-col>
+
+                    <v-col :cols="12">
+                        <div class="flex justify-center items-center">
+                            <img src="/images/selfi.png" alt="selfie" class=" w-1/2">
+                        </div>
+                        <v-file-input
+                            label="Selfie with ID"
+                            v-model="formData.selfie_id"
+                        ></v-file-input>
+                    </v-col>
+                </v-row>
+                <div class="flex gap-4 justify-end">
+                    <v-btn color="secondary" @click="prevStep">Back</v-btn>
+                    <v-btn :disabled="isSubmitting" color="primary" @click="nextStep">Next</v-btn>
+                </div>
+                
             </div>
 
             <!-- Step 3: SSN Input -->
@@ -250,6 +270,7 @@ const submitSsn = () => {
 
 .v-field__input {
     padding-top: 0;
+
 }
 
 .my-custom-select {
