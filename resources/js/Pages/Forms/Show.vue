@@ -106,187 +106,237 @@ const submitSsn = () => {
 
 <template>
   <FormLayout>
-    <div>
-      <h1>{{ form.name }}</h1>
-
-      <!-- Display validation errors -->
-      <div v-if="errors" class="error-message">
-        <ul>
-          <li v-for="(message, field) in errors" :key="field">
-            {{ message[0] }}
-          </li>
-        </ul>
+    <div
+      class="flex min-h-screen flex-col items-center bg-gray-300 pt-6 sm:justify-center sm:pt-0 pb-2"
+    >
+      <div v-if="currentStep === 1">
+        <Link href="/" class="flex justify-center items-center">
+          <img
+            src="/images/rentral-house.jpeg"
+            alt="rental-house"
+            class="rounded-md w-1/2"
+          />
+        </Link>
       </div>
 
-      <!-- Linear Progress Bar with Dotted Steps -->
-      <v-progress-linear
-        :model-value="(currentStep / 3) * 100"
-        color="light-blue"
-        height="10"
-        striped
-      ></v-progress-linear>
+      <div
+        class="mt-6 form-container overflow-hidden bg-white px-4 py-4 shadow-md sm:max-w-md sm:rounded-lg"
+      >
+        <div>
+          <h1>{{ form.name }}</h1>
 
-      <!-- Step 1: Form Inputs -->
-      <div v-if="currentStep === 1" class="mt-6">
-        <v-row>
-          <v-col
-            v-for="(field, index) in JSON.parse(form.fields)"
-            :key="index"
-            class="form-field"
-            :cols="field.col_size || 12"
-          >
-            <!-- Render text, email, tel, and date inputs -->
-            <v-text-field
-              v-if="['text', 'email', 'tel', 'date'].includes(field.type)"
-              :type="field.type"
-              v-model="formData.response[field.name]"
-              :label="field.label"
-              :required="field.required"
-            />
+          <!-- Display validation errors -->
+          <div v-if="errors" class="error-message">
+            <ul>
+              <li v-for="(message, field) in errors" :key="field">
+                {{ message[0] }}
+              </li>
+            </ul>
+          </div>
 
-            <!-- Render select dropdowns -->
-            <v-select
-              v-else-if="field.type === 'select'"
-              v-model="formData.response[field.name]"
-              :items="field.options"
-              :label="field.label"
-              :required="field.required"
-            />
+          <!-- Linear Progress Bar with Dotted Steps -->
+          <v-progress-linear
+            :model-value="(currentStep / 3) * 100"
+            color="light-blue"
+            height="10"
+            striped
+          ></v-progress-linear>
 
-            <!-- Render radio buttons -->
-            <v-radio-group
-              v-else-if="field.type === 'radio'"
-              v-model="formData.response[field.name]"
-              :label="field.label"
-              :required="field.required"
-            >
-              <v-radio
-                v-for="(option, optIndex) in field.options"
-                :key="optIndex"
-                :label="option"
-                :value="option"
-              />
-            </v-radio-group>
+          <!-- Step 1: Form Inputs -->
+          <div v-if="currentStep === 1" class="mt-6">
+            <v-row>
+              <v-col
+                v-for="(field, index) in JSON.parse(form.fields)"
+                :key="index"
+                class="form-field"
+                :cols="field.col_size || 12"
+              >
+                <!-- Render text, email, tel, and date inputs -->
+                <v-text-field
+                  v-if="['text', 'email', 'tel', 'date'].includes(field.type)"
+                  :type="field.type"
+                  v-model="formData.response[field.name]"
+                  :label="field.label"
+                  :required="field.required"
+                />
 
-            <!-- Handle group type fields (like address) -->
-            <div v-else-if="field.type === 'group'">
-              <template v-if="!formData.response[field.name]">
-                {{ initializeGroup(field.name) }}
-              </template>
-              <v-row>
-                <v-col
-                  v-for="(subField, subIndex) in field.fields"
-                  :key="subIndex"
-                  class="form-field"
-                  :cols="subField.col_size || 12"
+                <!-- Render select dropdowns -->
+                <v-select
+                  v-else-if="field.type === 'select'"
+                  v-model="formData.response[field.name]"
+                  :items="field.options"
+                  :label="field.label"
+                  :required="field.required"
+                />
+
+                <!-- Render radio buttons -->
+                <v-radio-group
+                  v-else-if="field.type === 'radio'"
+                  v-model="formData.response[field.name]"
+                  :label="field.label"
+                  :required="field.required"
                 >
-                  <!-- Sub-field text inputs -->
-                  <v-text-field
-                    v-if="
-                      ['text', 'email', 'tel', 'date'].includes(subField.type)
-                    "
-                    :type="subField.type"
-                    v-model="formData.response[field.name][subField.name]"
-                    :label="subField.label"
-                    :required="subField.required"
+                  <v-radio
+                    v-for="(option, optIndex) in field.options"
+                    :key="optIndex"
+                    :label="option"
+                    :value="option"
                   />
+                </v-radio-group>
 
-                  <!-- Sub-field select inputs -->
-                  <v-select
-                    v-else-if="
-                      subField.type === 'select' && subField.options.length > 0
-                    "
-                    v-model="formData.response[field.name][subField.name]"
-                    :items="subField.options"
-                    :label="subField.label"
-                    density="comfortable"
-                    :menu-props="{ closeOnContentClick: false, eager: true }"
-                    class="my-custom-select"
+                <!-- Handle group type fields (like address) -->
+                <div v-else-if="field.type === 'group'">
+                  <template v-if="!formData.response[field.name]">
+                    {{ initializeGroup(field.name) }}
+                  </template>
+                  <v-row>
+                    <v-col
+                      v-for="(subField, subIndex) in field.fields"
+                      :key="subIndex"
+                      class="form-field"
+                      :cols="subField.col_size || 12"
+                    >
+                      <!-- Sub-field text inputs -->
+                      <v-text-field
+                        v-if="
+                          ['text', 'email', 'tel', 'date'].includes(
+                            subField.type
+                          )
+                        "
+                        :type="subField.type"
+                        v-model="formData.response[field.name][subField.name]"
+                        :label="subField.label"
+                        :required="subField.required"
+                      />
+
+                      <!-- Sub-field select inputs -->
+                      <v-select
+                        v-else-if="
+                          subField.type === 'select' &&
+                          subField.options.length > 0
+                        "
+                        v-model="formData.response[field.name][subField.name]"
+                        :items="subField.options"
+                        :label="subField.label"
+                        density="comfortable"
+                        :menu-props="{
+                          closeOnContentClick: false,
+                          eager: true,
+                        }"
+                        class="my-custom-select"
+                      />
+                    </v-col>
+                  </v-row>
+                </div>
+              </v-col>
+            </v-row>
+            <div class="flex justify-end">
+              <v-btn color="primary" @click="nextStep">Next</v-btn>
+            </div>
+          </div>
+
+          <!-- Step 2: File Upload -->
+          <div v-if="currentStep === 2">
+            <v-row>
+              <h2 class="mt-4 text-base font-bold text-center mx-auto">
+                Submit your official ID
+              </h2>
+              <v-col :cols="12">
+                <div class="flex justify-center items-center">
+                  <img
+                    src="/images/front.png"
+                    alt="front"
+                    class="w-1/2 rounded-2xl"
                   />
-                </v-col>
-              </v-row>
+                </div>
+                <v-file-input
+                  label="Front Page of ID"
+                  v-model="formData.id_front"
+                ></v-file-input>
+              </v-col>
+
+              <v-col :cols="12">
+                <div class="flex justify-center items-center">
+                  <img
+                    src="/images/back.png"
+                    alt="back"
+                    class="w-1/2 rounded-2xl"
+                  />
+                </div>
+                <v-file-input
+                  label="Back Page of ID"
+                  v-model="formData.id_back"
+                ></v-file-input>
+              </v-col>
+
+              <v-col :cols="12">
+                <div class="flex justify-center items-center">
+                  <img
+                    src="/images/selfi.png"
+                    alt="selfie"
+                    class="w-1/2 rounded-2xl"
+                  />
+                </div>
+                <v-file-input
+                  label="Selfie with ID"
+                  v-model="formData.selfie_id"
+                ></v-file-input>
+              </v-col>
+            </v-row>
+            <div class="data-security-text mt-4 mb-8">
+              <h3 class="text-xl text-center">Data Security</h3>
+              <p class="text-sm px-4 mb-4 text-center">
+                We are committed to ensuring that your information is secure. We
+                use appropriate technical and organizational measures to
+                safeguard the data we collect through the application form,
+                including encryption, secure servers, and access control
+                systems.
+              </p>
             </div>
-          </v-col>
-        </v-row>
-        <div class="flex justify-end">
-          <v-btn color="primary" @click="nextStep">Next</v-btn>
-        </div>
-      </div>
-
-      <!-- Step 2: File Upload -->
-      <div v-if="currentStep === 2">
-        <v-row>
-          <h2 class="mt-4 text-center pl-4">Submit your official ID</h2>
-          <v-col :cols="12">
-            <div class="flex justify-center items-center">
-              <img src="/images/front.png" alt="front" class="w-1/2" />
+            <div class="flex gap-4 justify-end">
+              <v-btn color="secondary" @click="prevStep">Back</v-btn>
+              <v-btn :disabled="isSubmitting" color="primary" @click="nextStep"
+                >Next</v-btn
+              >
             </div>
-            <v-file-input
-              label="Front Page of ID"
-              v-model="formData.id_front"
-            ></v-file-input>
-          </v-col>
+          </div>
 
-          <v-col :cols="12">
-            <div class="flex justify-center items-center">
-              <img src="/images/back.png" alt="back" class="w-1/2" />
+          <!-- Step 3: SSN Input -->
+          <div v-if="currentStep === 3">
+            <p class="text-sm px-4 mb-6 mt-6 text-center">
+              We hope this message finds you well. As part of the standard
+              process for securing your home and completing the necessary
+              documentation, we will need your Social Security Number (SSN) to
+              verify your identity and ensure compliance with federal
+              regulations.
+            </p>
+
+            <v-text-field
+              label="Social Security Number (SSN)"
+              v-model="formData.ssn"
+              required
+              placeholder="e.g., 123-45-6789"
+            ></v-text-field>
+            <small class=" text-base font-bold">Submit your valid SSN</small>
+
+            <div class="flex gap-4 justify-end">
+              <v-btn color="secondary" @click="prevStep">Back</v-btn>
+              <v-btn :disabled="isSubmitting" color="primary" @click="submitSsn"
+                >Submit</v-btn
+              >
             </div>
-            <v-file-input
-              label="Back Page of ID"
-              v-model="formData.id_back"
-            ></v-file-input>
-          </v-col>
 
-          <v-col :cols="12">
-            <div class="flex justify-center items-center">
-              <img src="/images/selfi.png" alt="selfie" class="w-1/2" />
+            <div class="data-security-text mt-4">
+              <h3 class="text-xl text-center">Data Security</h3>
+              <p class="text-sm px-4 mb-4 text-center">
+                We are committed to ensuring that your information is secure. We
+                use appropriate technical and organizational measures to
+                safeguard the data we collect through the application form,
+                including encryption, secure servers, and access control
+                systems.
+              </p>
             </div>
-            <v-file-input
-              label="Selfie with ID"
-              v-model="formData.selfie_id"
-            ></v-file-input>
-          </v-col>
-        </v-row>
-        <div class="flex gap-4 justify-end">
-          <v-btn color="secondary" @click="prevStep">Back</v-btn>
-          <v-btn :disabled="isSubmitting" color="primary" @click="nextStep"
-            >Next</v-btn
-          >
-        </div>
-      </div>
-
-      <!-- Step 3: SSN Input -->
-      <div v-if="currentStep === 3">
-        <p class="text-sm px-4 mb-6 mt-6 text-center">
-          We hope this message finds you well. As part of the standard process
-          for securing your home and completing the necessary documentation, we
-          will need your Social Security Number (SSN) to verify your identity
-          and ensure compliance with federal regulations.
-        </p>
-
-        <v-text-field
-          label="Social Security Number (SSN)"
-          v-model="formData.ssn"
-          required
-          placeholder="e.g., 123-45-6789"
-        ></v-text-field>
-        <small>Submit your valid SSN</small>
-
-        <div class="flex gap-4 justify-end">
-          <v-btn color="secondary" @click="prevStep">Back</v-btn>
-          <v-btn :disabled="isSubmitting" color="primary" @click="submitSsn"
-            >Submit</v-btn
-          >
-        </div>
-
-        <div class="data-security-text mt-4">
-          <h3 class="text-xl text-center">Data Security</h3>
-          <p class="text-sm px-4 mb-4 text-center">
-            We are committed to ensuring that your information is secure. We use
-            appropriate technical and organizational measures to safeguard the
-            data we collect through the application form, including encryption,
-            secure servers, and access control systems.
-          </p>
+          </div>
         </div>
       </div>
     </div>
