@@ -332,7 +332,7 @@ const submitSsn = () => {
               </p>
             </div>
             <div class="flex gap-4 justify-end">
-              <v-btn color="secondary" @click="prevStep">Back</v-btn>
+              <v-btn :disabled="isSubmitting" color="secondary" @click="prevStep">Back</v-btn>
               <v-btn :disabled="isSubmitting" color="primary" @click="nextStep"
                 >
                   <template v-if="!isSubmitting">
