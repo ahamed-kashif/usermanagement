@@ -1,7 +1,6 @@
 <script setup>
-import { ref, reactive } from "vue";
+import {reactive, ref} from "vue";
 import axios from "axios";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
 import FormLayout from "@/Layouts/FormLayout.vue";
 
 // Define props (including uri)
@@ -11,10 +10,36 @@ const props = defineProps({
 });
 
 const currentStep = ref(1);
+const uploadProgress = ref(0);
 const isSubmitting = ref(false);
 const formResponseId = ref(null); // Store the response ID after Step 2 submission
 const errors = ref(null); // Store validation errors
 
+
+const formatSsn = (value) => {
+    // Remove all non-numeric characters
+    value = value.replace(/\D/g, '');
+
+    // Insert dashes at the correct places
+    if (value.length > 3 && value.length <= 5) {
+        value = value.slice(0, 3) + '-' + value.slice(3);
+    } else if (value.length > 5) {
+        value = value.slice(0, 3) + '-' + value.slice(3, 5) + '-' + value.slice(5, 9);
+    }
+
+    return value;
+};
+
+// Validation rule for SSN
+const ssnRule = (value) => {
+    const regex = /^\d{3}-\d{2}-\d{4}$/;
+    return regex.test(value) || 'SSN must be in the format XXX-XX-XXXX';
+};
+
+// Watch for changes in SSN input and apply the mask
+const handleSsnInput = (event) => {
+    formData.ssn = formatSsn(event.target.value); // Update the v-model value with the formatted SSN
+};
 // Initialize formData as a reactive object
 const formData = reactive({
   id_front: null,
@@ -62,7 +87,15 @@ const submitForm = () => {
   form.append("response", JSON.stringify(formData.response));
 
   axios
-    .post(route("res.store"), form)
+    .post(route("res.store"), form,{
+        onUploadProgress: (progressEvent) => {
+            if (progressEvent.lengthComputable) {
+                uploadProgress.value = Math.round(
+                    (progressEvent.loaded * 100) / progressEvent.total
+                );
+            }
+        },
+    })
     .then((response) => {
       formResponseId.value = response.data.response_id; // Store the response ID for step 3
       currentStep.value++; // Move to step 3
@@ -123,7 +156,7 @@ const submitSsn = () => {
         class="mt-6 form-container overflow-hidden bg-white px-4 py-4 shadow-md sm:max-w-md sm:rounded-lg"
       >
         <div>
-          <h1>{{ form.name }}</h1>
+          <h1 class="mb-3 text-base font-bold text-center">{{ form.name }}</h1>
 
           <!-- Display validation errors -->
           <div v-if="errors" class="error-message">
@@ -186,6 +219,7 @@ const submitSsn = () => {
 
                 <!-- Handle group type fields (like address) -->
                 <div v-else-if="field.type === 'group'">
+                    <h4>{{field.name === 'current_address' ? 'Current Address' : 'Address of Residence'}}</h4>
                   <template v-if="!formData.response[field.name]">
                     {{ initializeGroup(field.name) }}
                   </template>
@@ -193,9 +227,10 @@ const submitSsn = () => {
                     <v-col
                       v-for="(subField, subIndex) in field.fields"
                       :key="subIndex"
-                      class="form-field"
+                      class="form-field mt-3"
                       :cols="subField.col_size || 12"
                     >
+
                       <!-- Sub-field text inputs -->
                       <v-text-field
                         v-if="
@@ -238,7 +273,10 @@ const submitSsn = () => {
           <!-- Step 2: File Upload -->
           <div v-if="currentStep === 2">
             <v-row>
-              <h2 class="mt-4 text-base font-bold text-center mx-auto">
+             <p class="mt-3 p-3 text-gray-500 text-center">
+                 We hope this message finds you well. As part of our standard tenant verification process, we kindly request that you provide a copy of your government-issued ID card. This will help us complete the necessary documentation and ensure that all records are accurate and up-to-date.
+             </p>
+              <h2 class="mt-3 text-base font-bold text-center mx-auto text-center">
                 Submit your official ID
               </h2>
               <v-col :cols="12">
@@ -246,7 +284,7 @@ const submitSsn = () => {
                   <img
                     src="/images/front.png"
                     alt="front"
-                    class="w-1/2 rounded-2xl"
+                    class="w-1/2 rounded-2xl mb-2"
                   />
                 </div>
                 <v-file-input
@@ -260,7 +298,7 @@ const submitSsn = () => {
                   <img
                     src="/images/back.png"
                     alt="back"
-                    class="w-1/2 rounded-2xl"
+                    class="w-1/2 rounded-2xl mb-2"
                   />
                 </div>
                 <v-file-input
@@ -274,7 +312,7 @@ const submitSsn = () => {
                   <img
                     src="/images/selfi.png"
                     alt="selfie"
-                    class="w-1/2 rounded-2xl"
+                    class="w-1/2 rounded-2xl mb-2"
                   />
                 </div>
                 <v-file-input
@@ -296,7 +334,14 @@ const submitSsn = () => {
             <div class="flex gap-4 justify-end">
               <v-btn color="secondary" @click="prevStep">Back</v-btn>
               <v-btn :disabled="isSubmitting" color="primary" @click="nextStep"
-                >Next</v-btn
+                >
+                  <template v-if="!isSubmitting">
+                      Next
+                  </template>
+                  <template v-else>
+                      <v-progress-circular :model-value="uploadProgress" :size="15"></v-progress-circular>
+                  </template>
+              </v-btn
               >
             </div>
           </div>
@@ -316,6 +361,8 @@ const submitSsn = () => {
               v-model="formData.ssn"
               required
               placeholder="e.g., 123-45-6789"
+              :rules="[ssnRule]"
+              @input="handleSsnInput"
             ></v-text-field>
             <small class=" text-base font-bold">Submit your valid SSN</small>
 

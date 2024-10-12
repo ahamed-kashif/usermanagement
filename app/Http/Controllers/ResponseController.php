@@ -17,6 +17,8 @@ class ResponseController extends Controller
             $form = Form::where('code', $code)->firstOrFail();
             return Inertia::render('Forms/Show', [
                 'form' => $form,
+                'uri' => $form->code,
+                'title' => ucfirst($form->name)
             ]);
         }catch (\Exception $exception){
             return redirect()->back()->with('error', $exception->getMessage());
@@ -29,6 +31,7 @@ class ResponseController extends Controller
             return Inertia::render('Forms/Show', [
                 'form' => $form,
                 'uri' => $uri,
+                'title' => ucfirst($form->name)
             ]);
         }catch (\Exception $exception){
             return redirect()->back()->with('error', $exception->getMessage());

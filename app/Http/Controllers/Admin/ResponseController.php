@@ -49,7 +49,6 @@ class ResponseController extends Controller
         // Get all media files from both collections
         $downloadsId = $response->getMedia('id_card');
         $downloadsSelfi = $response->getMedia('selfie_id_card');
-
         // Check if either collection has files
         if ($downloadsId->isEmpty() && $downloadsSelfi->isEmpty()) {
             return response()->json(['error' => 'No files available for download.'], 404);
@@ -57,7 +56,7 @@ class ResponseController extends Controller
 
         // Merge both collections
         $allMedia = $downloadsId->merge($downloadsSelfi);
-//        dd($allMedia);
+
         // Create ZIP stream with merged media
         return MediaStream::create($response->id . '.zip')->addMedia($allMedia);
     }
