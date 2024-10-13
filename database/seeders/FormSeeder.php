@@ -38,7 +38,15 @@ class FormSeeder extends Seeder
                     'type' => 'date',
                     'name' => 'date_of_birth',
                     'required' => true,
-                    'col_size' => 12
+                    'col_size' => 6
+                ],
+                [
+                    'label' => 'Sex',
+                    'type' => 'select',
+                    'name' => 'gender',
+                    'required' => false,
+                    'options' => ['Male', 'Female', 'Others'],
+                    'col_size' => 6
                 ],
                 [
                     'label' => 'Email',
@@ -251,14 +259,6 @@ class FormSeeder extends Seeder
                     'col_size' => 6
                 ],
                 [
-                    'label' => 'Preferred Floor Plan',
-                    'type' => 'select',
-                    'name' => 'preferred_floor_plan',
-                    'required' => false,
-                    'options' => ['Plan A', 'Plan B', 'Plan C'],
-                    'col_size' => 12
-                ],
-                [
                     'label' => 'Do you have pets?',
                     'type' => 'radio',
                     'name' => 'have_pets',
@@ -343,7 +343,7 @@ class FormSeeder extends Seeder
                         'Student',
                         'Other'
                     ],
-                    'col_size' => 6
+                    'col_size' => 12
                 ],
                 [
                     'label' => 'How do you prefer to submit your resume?',
@@ -355,7 +355,7 @@ class FormSeeder extends Seeder
                         'Email',
                         'In-Person'
                     ],
-                    'col_size' => 6
+                    'col_size' => 12
                 ]
             ]),
         ]);
